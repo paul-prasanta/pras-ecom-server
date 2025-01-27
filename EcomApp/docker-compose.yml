@@ -1,0 +1,37 @@
+#
+# ecomapp - docker-compose. 
+# mysql db is initialized with DB schema (docs/ecomdb_schema_mysql.sql)
+# https://github.com/paul-prasanta
+#
+version: "1"
+services:
+  ecom_app:
+    depends_on:
+      - mysqldb # depends on db
+    build: . # use Dockerfile
+    restart: always # multiple restarts may be required during initial setup
+    ports:
+      - 8080:8080
+    networks:
+      - ecomapp-net # use same network
+    environment:
+      MYSQL_DB_HOST: mysqldb # Use container name to create Datasource URL
+    volumes:
+      - .m2:/root/.m2
+  mysqldb:
+    image: "mysql:8.0"
+    restart: always # multiple restarts may be required during initial setup
+    ports:
+      - "3306:3306"
+    volumes:
+      - .\docs\ecomdb_schema_mysql.sql:/docker-entrypoint-initdb.d/schema.sql # Execute this SQL during DB init (https://hub.docker.com/_/mysql) :ro
+    environment:
+      MYSQL_DATABASE: ecomdb # create db
+      MYSQL_USER: fiddle # create user
+      MYSQL_PASSWORD: fiddle123 # create user password
+      MYSQL_ROOT_PASSWORD: root # create root password
+    networks:
+      - ecomapp-net # use same network
+networks:
+  ecomapp-net:
+  
